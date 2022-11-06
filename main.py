@@ -107,7 +107,10 @@ vidFont = py.font.SysFont("futura", 30)
 vd = VideoSprite(py.Rect(0,0,WIDTH//2, HEIGHT-200), fps)
 vid_text1 = vidFont.render(f"Time for video (in real time): {vd.video.duration:.2f}s", True, WHITE, BLACK)
 vid_text2 = vidFont.render(f"Time for video (in dilated time): {vd.vid_duration:.04f}s", True, WHITE, BLACK)
-vid_text3 = vidFont.render(f"Lorentz Factor: {vd.lorFac:.05f}", True, WHITE, BLACK)
+try:
+    vid_text3 = vidFont.render(f"Lorentz Factor: {1/vd.lorFac:.05f}", True, WHITE, BLACK)
+except ZeroDivisionError:
+    vid_text3 = vidFont.render(f"Lorentz Factor: Infinity", True, WHITE, BLACK)
 
 fly_time = 0
 rocket = ROCKET_STAT
@@ -131,20 +134,27 @@ while True:
             if speedDown_x < mouse_x and speedDown_x+SPEED_DOWN.get_width() > mouse_x and mouse_y > speedDown_y and speedDown_y+SPEED_DOWN.get_height() > mouse_y and round(spaceshipSpeed, 2) >= 0.05:
                 if round(spaceshipSpeed, 2) == 0.05:
                     scrollSpeed = 0
+                    spaceshipSpeed = 0
                 else:
                     scrollSpeed -= 2
-                spaceshipSpeed -= 0.05
+                    spaceshipSpeed -= 0.05
                 rocket = ROCKET_FLY
 
             if spaceshipSpeed >= 1:
                 lorFac = 0
+
+            elif spaceshipSpeed == 0:
+                lorFac = 1
             else:
                 lorFac = (1 - spaceshipSpeed**2)**1/2
             vd.update(lorFac)
             speed_text = speedFont.render(f"{abs(light_speed*spaceshipSpeed):.0f} km/s", True, WHITE, BLACK)
             vid_text1 = vidFont.render(f"Time for video (in real time): {vd.video.duration:.2f}s", True, WHITE, BLACK)
             vid_text2 = vidFont.render(f"Time for video (in dilated time): {vd.vid_duration:.04f}s", True, WHITE, BLACK)
-            vid_text3 = vidFont.render(f"Lorentz Factor: {vd.lorFac:.05f}", True, WHITE, BLACK)
+            try:
+                vid_text3 = vidFont.render(f"Lorentz Factor: {1/vd.lorFac:.05f}", True, WHITE, BLACK)
+            except ZeroDivisionError:
+                vid_text3 = vidFont.render(f"Lorentz Factor: Infinity", True, WHITE, BLACK)
             
             scrolling(bg1, bg2, scrollSpeed, rocket)
 
