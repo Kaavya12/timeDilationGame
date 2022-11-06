@@ -36,7 +36,7 @@ class VideoSprite(py.sprite.Sprite):
         self.video_stop = False
         self.last_at = 0
         self.frame_delay = 1000/FPS
-        self.lorFac = (1 - 0.1**2)**1/2
+        self.lorFac = 1
         self.vid_duration = self.video.duration/self.lorFac
 
     def update(self,lorFac, time=py.time.get_ticks()):
@@ -95,13 +95,13 @@ speed_y = HEIGHT - SPEED_BAR.get_height()
 speedDown_x, speedDown_y = speed_x + SPEED_BAR.get_width() * 0.30, speed_y + SPEED_BAR.get_height()//4
 speedUp_x, speedUp_y= speed_x + SPEED_BAR.get_width() * 0.85, speed_y + SPEED_BAR.get_height()//4
 speedText_x, speedText_y = speed_x + SPEED_BAR.get_width() * 0.40, speed_y + SPEED_BAR.get_height()//3
-spaceshipSpeed = 0.1
+spaceshipSpeed = 0
 fps = 60
 light_speed = 300000
 
 speedFont = py.font.SysFont("couriernew", 40)
 speed_text = speedFont.render(f"{spaceshipSpeed*light_speed:.0f} km/s", True, WHITE, BLACK)
-scrollSpeed = 10
+scrollSpeed = 0
 vidFont = py.font.SysFont("futura", 30)
 
 vd = VideoSprite(py.Rect(0,0,WIDTH//2, HEIGHT-200), fps)
@@ -121,13 +121,19 @@ while True:
         if event.type == py.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = py.mouse.get_pos()
             if speedUp_x < mouse_x and speedUp_x+SPEED_UP.get_width() > mouse_x and mouse_y > speedUp_y and speedUp_y+SPEED_UP.get_height() > mouse_y and spaceshipSpeed < 1:
+                if spaceshipSpeed == 0:
+                    scrollSpeed += 8
+                else:
+                    scrollSpeed += 2
                 spaceshipSpeed += 0.05
-                scrollSpeed += 2
                 rocket = ROCKET_FLY
 
-            if speedDown_x < mouse_x and speedDown_x+SPEED_DOWN.get_width() > mouse_x and mouse_y > speedDown_y and speedDown_y+SPEED_DOWN.get_height() > mouse_y and spaceshipSpeed > 0.1:
+            if speedDown_x < mouse_x and speedDown_x+SPEED_DOWN.get_width() > mouse_x and mouse_y > speedDown_y and speedDown_y+SPEED_DOWN.get_height() > mouse_y and round(spaceshipSpeed, 2) >= 0.05:
+                if round(spaceshipSpeed, 2) == 0.05:
+                    scrollSpeed = 0
+                else:
+                    scrollSpeed -= 2
                 spaceshipSpeed -= 0.05
-                scrollSpeed -= 2
                 rocket = ROCKET_FLY
 
             if spaceshipSpeed >= 1:
@@ -135,7 +141,7 @@ while True:
             else:
                 lorFac = (1 - spaceshipSpeed**2)**1/2
             vd.update(lorFac)
-            speed_text = speedFont.render(f"{light_speed*spaceshipSpeed:.0f} km/s", True, WHITE, BLACK)
+            speed_text = speedFont.render(f"{abs(light_speed*spaceshipSpeed):.0f} km/s", True, WHITE, BLACK)
             vid_text1 = vidFont.render(f"Time for video (in real time): {vd.video.duration:.2f}s", True, WHITE, BLACK)
             vid_text2 = vidFont.render(f"Time for video (in dilated time): {vd.vid_duration:.04f}s", True, WHITE, BLACK)
             vid_text3 = vidFont.render(f"Lorentz Factor: {vd.lorFac:.05f}", True, WHITE, BLACK)
